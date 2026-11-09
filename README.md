@@ -11,7 +11,7 @@ Built as a Coding Temple back-end course project (February to March 2026). There
 - Member passwords hashed with Werkzeug on create and update.
 - Book search across title, author, genre and description (`GET /books/search?q=`), capped at 50 results.
 - Per-route rate limits with Flask-Limiter. Limit breaches return a JSON `429` body.
-- Cached list and detail reads with Flask-Caching (60 seconds), cleared when a write touches that resource.
+- Cached list and detail reads with Flask-Caching (60 seconds). Each resource's create, update and delete handlers clear its own list and detail keys.
 - A server-rendered home page (register / log in) and a dashboard (add and browse books, borrow books, view your loans), written in vanilla JavaScript.
 - `/health` endpoint, a Gunicorn config and `railway.json` for deployment.
 
@@ -85,7 +85,7 @@ All JSON. Protected routes need `Authorization: Bearer <access_token>`. "Cached"
 
 ### Prerequisites
 
-- Python 3.9 or newer (the minimum for Flask 3.1; developed on 3.13)
+- Python 3.10 or newer (Flask-Limiter 4.1 requires it; developed on 3.13)
 - MySQL with an empty database, for example `CREATE DATABASE library_db;`
 - Redis (optional locally)
 
