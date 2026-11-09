@@ -29,7 +29,7 @@ Python, Flask 3.1, SQLAlchemy 2.0 (typed `Mapped` models), Flask-SQLAlchemy, Mar
   - the JWT secret
   - the database URL
   - the limiter's Redis URL
-  - the cache's Redis URL
+  - the cache's Redis URL, when `CACHE_TYPE` is `RedisCache` (the production default)
 - **Rate limits are keyed per user, not just per IP** (`app/extensions.py`):
   - The key function optionally verifies the JWT. It keys by `user:<id>` when a valid token is present and falls back to `ip:<address>`.
   - Limit values live in `BaseConfig` in `config.py`:
@@ -101,7 +101,7 @@ pip install -r requirements.txt
 
 ### Environment variables
 
-The app reads only real environment variables. Nothing loads a `.env` file automatically, so export the values in your shell or set them on your host. `.env.example` lists every variable with placeholder values.
+The app reads only real environment variables. Nothing loads a `.env` file automatically, so export the values in your shell or set them on your host. `.env.example` shows the main ones with placeholder values; the table below is the full list.
 
 | Variable | Needed for | Purpose |
 |---|---|---|
@@ -109,7 +109,7 @@ The app reads only real environment variables. Nothing loads a `.env` file autom
 | `DATABASE_URL` | dev and prod | SQLAlchemy URL, e.g. `mysql+mysqlconnector://user:password@localhost:3306/library_db` |
 | `MYSQL_URL`, `MYSQL_PUBLIC_URL`, `MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE` | prod alternative | Railway MySQL variables, used when `DATABASE_URL` is not set |
 | `JWT_SECRET_KEY` | prod (required) | Signs tokens. Production refuses the built-in placeholder |
-| `REDIS_URL` / `REDIS_PUBLIC_URL` | prod (required) | Shared Redis for the limiter and cache |
+| `REDIS_URL` / `REDIS_PUBLIC_URL` | prod (required unless both overrides below are set) | Shared Redis for the limiter and cache |
 | `CACHE_REDIS_URL`, `RATELIMIT_STORAGE_URI` | optional | Separate Redis URLs for the cache and the limiter |
 | `CACHE_TYPE` | optional | Defaults to `SimpleCache` in dev and `RedisCache` in prod |
 | `AUTO_CREATE_TABLES` | first run | `true` runs `db.create_all()` on startup (there are no migrations) |
@@ -150,7 +150,7 @@ The repo is set up for Railway but is not currently deployed.
 
 - **`railway.json`** builds with Railpack, starts `gunicorn app:app`, health-checks `/health`, and restarts on failure (up to 10 retries).
 - **`gunicorn.conf.py`** binds to `$PORT`. Gunicorn needs Linux or macOS; on Windows, use `python app.py` locally.
-- **Services:** add MySQL and Redis services to the Railway project. The app picks up their variables automatically (see the table above).
+- **Services:** add MySQL and Redis services to the Railway project, then reference their connection variables in the app service, for example `DATABASE_URL=${{MySQL.MYSQL_URL}}` and `REDIS_URL=${{Redis.REDIS_URL}}`. Railway sets `RAILWAY_ENVIRONMENT_NAME` itself, so the app selects `ProductionConfig` without `APP_CONFIG`.
 - **Variables to set yourself:** `JWT_SECRET_KEY`. Also set `AUTO_CREATE_TABLES=true` for the first boot if the database is empty.
 
 ## Project structure
