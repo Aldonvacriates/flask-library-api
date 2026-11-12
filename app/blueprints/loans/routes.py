@@ -108,6 +108,7 @@ def get_loan(loan_id):
 
 
 @loans_bp.route("/<int:loan_id>", methods=["PUT"])
+@jwt_required()
 def update_loan(loan_id):
     loan = db.session.get(Loan, loan_id)
 
@@ -146,6 +147,7 @@ def update_loan(loan_id):
 
 
 @loans_bp.route("/<int:loan_id>", methods=["DELETE"])
+@jwt_required()
 def delete_loan(loan_id):
     loan = db.session.get(Loan, loan_id)
 

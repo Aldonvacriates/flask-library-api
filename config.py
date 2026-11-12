@@ -53,6 +53,12 @@ def _redis_url(default):
     return _first_env("REDIS_URL", "REDIS_PUBLIC_URL") or default
 
 
+# Fallback used only when no database env vars are set. It contains no
+# password: set DATABASE_URL (see .env.example) for a real connection.
+# ProductionConfig refuses to boot with this value (app/__init__.py).
+LOCAL_DATABASE_URL = "mysql+mysqlconnector://root@localhost/library_db"
+
+
 # -----------------------------------------------------
 # Base configuration
 # This class contains settings shared across all
@@ -138,10 +144,8 @@ class DevelopmentConfig(BaseConfig):
     # Simple in-memory cache for development
     CACHE_TYPE = os.getenv("CACHE_TYPE", "SimpleCache")
 
-    # Local MySQL database connection
-    SQLALCHEMY_DATABASE_URI = _database_url(
-        "mysql+mysqlconnector://root:Lolita1!@localhost/library_db"
-    )
+    # Local MySQL database connection (from DATABASE_URL or MySQL env vars)
+    SQLALCHEMY_DATABASE_URI = _database_url(LOCAL_DATABASE_URL)
 
     # Enables Flask debug mode
     DEBUG = True
@@ -184,7 +188,5 @@ class ProductionConfig(BaseConfig):
     # Production cache should use Redis
     CACHE_TYPE = os.getenv("CACHE_TYPE", "RedisCache")
 
-    # Production database connection
-    SQLALCHEMY_DATABASE_URI = _database_url(
-        "mysql+mysqlconnector://root:Lolita1!@localhost/library_db"
-    )
+    # Production database connection (must come from the environment)
+    SQLALCHEMY_DATABASE_URI = _database_url(LOCAL_DATABASE_URL)
